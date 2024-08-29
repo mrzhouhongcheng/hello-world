@@ -71,11 +71,8 @@ pub mod file_service {
         // 对map_data进行遍历； 从小到大先排序
         for (_, value) in map_data {
             let mut tem_file = File::open(value).expect("read file failed");
-
             let mut buffer = Vec::new();
-
             tem_file.read_to_end(&mut buffer).unwrap();
-
             original_file.write_all(&mut buffer).unwrap();
         }
         Ok(())
