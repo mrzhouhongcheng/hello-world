@@ -1,10 +1,10 @@
 /// 文件服务, 文件合并, 和文件拆分
 pub mod file_service {
     use std::{
-        collections::{BTreeMap, HashMap},
+        collections::BTreeMap,
         fs::{self, File},
-        io::{BufReader, BufWriter, Error, Read, Write},
-        path::{Path, PathBuf},
+        io::{BufRead, BufReader, BufWriter, Error, Read, Write},
+        path::Path,
     };
 
     use regex::Regex;
@@ -42,7 +42,8 @@ pub mod file_service {
     }
 
     /// path : 文件夹的路径地址;
-    pub fn file_merge(_path: &str) -> Result<(), Error> {
+    /// file_name: 生成的文件名字;
+    pub fn file_merge(_path: &str, file_name: &str) -> Result<(), Error> {
         let file_path = Path::new(_path);
         if !file_path.exists() || !file_path.is_dir() {
             return Err(Error::new(
@@ -62,9 +63,20 @@ pub mod file_service {
                 map_data.entry(file_index).or_insert(file_path);
             }
         }
+        let mut original_file = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(file_name)
+            .unwrap();
         // 对map_data进行遍历； 从小到大先排序
-        for (key, value) in map_data {
-            println!("key : {} ; value: {:?}", key, value);
+        for (_, value) in map_data {
+            let mut tem_file = File::open(value).expect("read file failed");
+
+            let mut buffer = Vec::new();
+
+            tem_file.read_to_end(&mut buffer).unwrap();
+
+            original_file.write_all(&mut buffer).unwrap();
         }
         Ok(())
     }
@@ -119,6 +131,13 @@ pub mod file_service {
     }
 
     #[test]
+    fn merge_file_test() {
+        file_merge("./", "./test_name.exe").unwrap();
+        let file = Path::new("./jdk-8u361-windows-x64.exe");
+        assert!(file.exists())
+    }
+
+    #[test]
     fn get_file_original_index_test() {
         let _path = Path::new("./jdk-8u361-windows-x64.exe_part1");
         let index = get_file_original_index(_path).unwrap();
@@ -132,7 +151,7 @@ pub mod file_service {
 
     #[test]
     fn file_merge_test() {
-        file_merge("./").expect("file merge failed");
+        file_merge("./", "test.aaa.exe").expect("file merge failed");
     }
 
     #[test]
