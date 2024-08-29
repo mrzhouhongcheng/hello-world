@@ -3,7 +3,7 @@ pub mod file_service {
     use std::{
         collections::BTreeMap,
         fs::{self, File},
-        io::{BufRead, BufReader, BufWriter, Error, Read, Write},
+        io::{BufReader, BufWriter, Error, Read, Write},
         path::Path,
     };
 
